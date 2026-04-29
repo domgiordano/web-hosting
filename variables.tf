@@ -79,6 +79,12 @@ variable "max_ttl" {
   default     = 60
 }
 
+variable "enable_subroute_rewrite" {
+  description = "Attach a CloudFront Function that rewrites /foo and /foo/ to /foo/index.html. Required for static-export apps with deep routes (Next.js export, etc.) when the SPA error fallback would otherwise serve the home page for every URL."
+  type        = bool
+  default     = false
+}
+
 variable "minimum_tls_version" {
   description = "Minimum TLS version for CloudFront"
   type        = string

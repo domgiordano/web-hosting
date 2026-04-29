@@ -47,6 +47,14 @@ resource "aws_cloudfront_distribution" "site" {
       }
     }
 
+    dynamic "function_association" {
+      for_each = var.enable_subroute_rewrite ? [1] : []
+      content {
+        event_type   = "viewer-request"
+        function_arn = aws_cloudfront_function.subroute_rewrite[0].arn
+      }
+    }
+
     min_ttl                = 0
     default_ttl            = var.enable_cache ? var.default_ttl : 0
     max_ttl                = var.enable_cache ? var.max_ttl : 0
