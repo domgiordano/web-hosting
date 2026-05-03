@@ -19,7 +19,7 @@ resource "aws_cloudfront_distribution" "site" {
   }
 
   web_acl_id          = var.waf_acl_arn != "" ? var.waf_acl_arn : null
-  aliases             = [var.domain_name]
+  aliases             = concat([var.domain_name], var.subject_alternative_names)
   retain_on_delete    = var.retain_on_delete
   enabled             = true
   is_ipv6_enabled     = true
@@ -52,6 +52,14 @@ resource "aws_cloudfront_distribution" "site" {
       content {
         event_type   = "viewer-request"
         function_arn = aws_cloudfront_function.subroute_rewrite[0].arn
+      }
+    }
+
+    dynamic "function_association" {
+      for_each = var.canonical_host != "" ? [1] : []
+      content {
+        event_type   = "viewer-request"
+        function_arn = aws_cloudfront_function.canonical_redirect[0].arn
       }
     }
 

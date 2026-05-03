@@ -85,6 +85,27 @@ variable "enable_subroute_rewrite" {
   default     = false
 }
 
+variable "subject_alternative_names" {
+  description = "Additional domain names to include on the ACM cert and CloudFront aliases. Useful for IDN canonical/non-canonical pairs (e.g. punycode + ASCII fallback). Each entry also gets a Route53 A-record alias to the same distribution."
+  type        = list(string)
+  default     = []
+}
+
+variable "canonical_host" {
+  description = <<-EOT
+    Canonical hostname for redirects. When set (and subject_alternative_names is
+    non-empty), attaches a CloudFront Function that 301-redirects any request whose
+    Host header doesn't match this value to the same path on canonical_host. Use
+    either var.domain_name or one of the SANs as the canonical.
+
+    NOTE: Mutually exclusive with enable_subroute_rewrite. CloudFront allows only
+    one viewer-request function per cache behavior — setting both will cause apply
+    to fail. Combine the two behaviors in a fork if you need both.
+  EOT
+  type        = string
+  default     = ""
+}
+
 variable "minimum_tls_version" {
   description = "Minimum TLS version for CloudFront"
   type        = string
