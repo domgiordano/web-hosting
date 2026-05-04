@@ -98,9 +98,10 @@ variable "canonical_host" {
     Host header doesn't match this value to the same path on canonical_host. Use
     either var.domain_name or one of the SANs as the canonical.
 
-    NOTE: Mutually exclusive with enable_subroute_rewrite. CloudFront allows only
-    one viewer-request function per cache behavior — setting both will cause apply
-    to fail. Combine the two behaviors in a fork if you need both.
+    Composes with enable_subroute_rewrite: when both are enabled, a single
+    viewer-request function handles canonical redirect first, then subroute
+    rewrite. CloudFront only allows one viewer-request function per behavior, so
+    we combine them in code.
   EOT
   type        = string
   default     = ""

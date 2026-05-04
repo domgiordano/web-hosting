@@ -48,18 +48,10 @@ resource "aws_cloudfront_distribution" "site" {
     }
 
     dynamic "function_association" {
-      for_each = var.enable_subroute_rewrite ? [1] : []
+      for_each = local.needs_viewer_request_function ? [1] : []
       content {
         event_type   = "viewer-request"
-        function_arn = aws_cloudfront_function.subroute_rewrite[0].arn
-      }
-    }
-
-    dynamic "function_association" {
-      for_each = var.canonical_host != "" ? [1] : []
-      content {
-        event_type   = "viewer-request"
-        function_arn = aws_cloudfront_function.canonical_redirect[0].arn
+        function_arn = aws_cloudfront_function.viewer_request[0].arn
       }
     }
 
