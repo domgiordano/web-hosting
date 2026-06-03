@@ -107,6 +107,42 @@ variable "canonical_host" {
   default     = ""
 }
 
+variable "enable_basic_auth" {
+  description = <<-EOT
+    Attach HTTP Basic Auth (single shared credential) at the viewer-request
+    stage. Gates only requests whose URI starts with var.basic_auth_path_prefix
+    (default: the whole site). Composes with canonical_host and
+    enable_subroute_rewrite in the same combined function — auth is checked
+    first.
+
+    WARNING: the base64(user:pass) token is embedded in the CloudFront Function
+    source, which is visible in Terraform state and the AWS console. This is an
+    interim shared-credential gate, NOT strong auth. Use a real identity
+    provider (e.g. Cognito) for sensitive production access.
+  EOT
+  type        = bool
+  default     = false
+}
+
+variable "basic_auth_username" {
+  description = "Username for Basic Auth. Required when enable_basic_auth is true."
+  type        = string
+  default     = ""
+}
+
+variable "basic_auth_password" {
+  description = "Password for Basic Auth. Required when enable_basic_auth is true. The base64(user:pass) token is embedded in the CloudFront Function source — interim gate only (see enable_basic_auth)."
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "basic_auth_path_prefix" {
+  description = "Only requests whose URI starts with this prefix require Basic Auth. Default '/' protects the entire site. Example: '/dashboards/' to gate one subtree while keeping the rest public."
+  type        = string
+  default     = "/"
+}
+
 variable "minimum_tls_version" {
   description = "Minimum TLS version for CloudFront"
   type        = string
