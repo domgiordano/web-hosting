@@ -29,6 +29,33 @@ module "web" {
 }
 ```
 
+## Restricting access (Basic Auth)
+
+Gate part of a site behind a single shared credential — e.g. keep the landing
+page public but require a login for `/dashboards/*`:
+
+```hcl
+module "web" {
+  source = "git::https://github.com/domgiordano/web-hosting.git?ref=v1.5.0"
+
+  app_name    = "vest"
+  domain_name = "example.com"
+  zone_id     = data.aws_route53_zone.zone.zone_id
+
+  enable_cache           = false          # drop-to-live: S3 uploads serve immediately
+  enable_basic_auth      = true
+  basic_auth_username    = var.dashboard_user
+  basic_auth_password    = var.dashboard_password   # mark sensitive in your tfvars
+  basic_auth_path_prefix = "/dashboards/"           # landing page stays public
+}
+```
+
+> **Interim gate, not strong auth.** The `base64(user:pass)` token is embedded
+> in the CloudFront Function source, which is visible in Terraform state and the
+> AWS console. Use it to keep casual visitors out of a subtree; for real
+> identity (per-user accounts, sensitive data) front it with Cognito or another
+> IdP instead.
+
 ## Inputs
 
 | Name | Description | Type | Default | Required |
@@ -45,6 +72,13 @@ module "web" {
 | `enable_cache` | Enable CloudFront caching. When false, TTLs are set to 0. | `bool` | `true` | no |
 | `default_ttl` | Default TTL for CloudFront cache (seconds) | `number` | `60` | no |
 | `max_ttl` | Max TTL for CloudFront cache (seconds) | `number` | `60` | no |
+| `enable_subroute_rewrite` | Attach a viewer-request function rewriting `/foo` and `/foo/` to `index.html`/`.html` (static-export deep routes). | `bool` | `false` | no |
+| `subject_alternative_names` | Extra domains added to the ACM cert + CloudFront aliases (each gets a Route53 alias). | `list(string)` | `[]` | no |
+| `canonical_host` | When set (with SANs), 301-redirects non-canonical hosts to this host via a viewer-request function. | `string` | `""` | no |
+| `enable_basic_auth` | Attach HTTP Basic Auth (single shared credential) at viewer-request, gating paths under `basic_auth_path_prefix`. Interim gate only — see note below. | `bool` | `false` | no |
+| `basic_auth_username` | Username for Basic Auth. Required when `enable_basic_auth` is true. | `string` | `""` | no |
+| `basic_auth_password` | Password for Basic Auth (sensitive). Required when `enable_basic_auth` is true. | `string` | `""` | no |
+| `basic_auth_path_prefix` | URI prefix that requires Basic Auth. `/` protects the whole site; `/dashboards/` gates one subtree. | `string` | `"/"` | no |
 | `minimum_tls_version` | Minimum TLS version for CloudFront | `string` | `"TLSv1.2_2018"` | no |
 | `waf_acl_arn` | WAF Web ACL ARN to associate with CloudFront. Leave empty to skip. | `string` | `""` | no |
 | `retain_on_delete` | Disable distribution instead of deleting when destroying | `bool` | `false` | no |
