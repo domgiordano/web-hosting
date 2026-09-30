@@ -65,9 +65,27 @@ CANONICAL
         if (uri !== '/' && uri.endsWith('/')) {
           request.uri = uri + 'index.html';
         } else if (uri !== '/' && !uri.includes('.')) {
+          ${var.subroute_style == "directory" ? <<-DIR
+          // trailingSlash builds only have /foo/index.html, so send /foo to
+          // /foo/ rather than serving the SPA fallback (the home page).
+          var qs = Object.keys(request.querystring).map(function (k) {
+            var v = request.querystring[k];
+            return v.multiValue
+              ? v.multiValue.map(function (m) { return k + '=' + m.value; }).join('&')
+              : k + '=' + v.value;
+          }).join('&');
+          return {
+            statusCode: 301,
+            statusDescription: 'Moved Permanently',
+            headers: { location: { value: uri + '/' + (qs ? '?' + qs : '') } }
+          };
+DIR
+  : <<-HTML
           // No file extension and no trailing slash — try .html (Next.js
           // static-export style) before falling back to the SPA error path.
           request.uri = uri + '.html';
+HTML
+}
         }
 REWRITE
 : ""}
