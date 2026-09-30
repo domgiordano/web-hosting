@@ -85,6 +85,17 @@ variable "enable_subroute_rewrite" {
   default     = false
 }
 
+variable "subroute_style" {
+  description = "How enable_subroute_rewrite resolves /foo: \"html\" rewrites to /foo.html (trailingSlash off), \"directory\" 301s to /foo/ (trailingSlash on, where only /foo/index.html exists)."
+  type        = string
+  default     = "html"
+
+  validation {
+    condition     = contains(["html", "directory"], var.subroute_style)
+    error_message = "subroute_style must be \"html\" or \"directory\"."
+  }
+}
+
 variable "subject_alternative_names" {
   description = "Additional domain names to include on the ACM cert and CloudFront aliases. Useful for IDN canonical/non-canonical pairs (e.g. punycode + ASCII fallback). Each entry also gets a Route53 A-record alias to the same distribution."
   type        = list(string)
