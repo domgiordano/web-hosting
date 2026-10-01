@@ -55,6 +55,12 @@ variable "spa_error_path" {
   default     = "/index.html"
 }
 
+variable "spa_error_response_code" {
+  description = "Status returned with spa_error_path. 200 for SPA routing; 404 when spa_error_path is a real not-found page."
+  type        = number
+  default     = 200
+}
+
 variable "geo_restriction_locations" {
   description = "List of country codes for geo restriction whitelist. Empty list for no restriction."
   type        = list(string)

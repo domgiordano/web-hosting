@@ -29,7 +29,7 @@ resource "aws_cloudfront_distribution" "site" {
     for_each = var.spa_error_path != "" ? [1] : []
     content {
       error_code         = 403
-      response_code      = 200
+      response_code      = var.spa_error_response_code
       response_page_path = var.spa_error_path
     }
   }
