@@ -35,9 +35,11 @@ resource "aws_cloudfront_distribution" "site" {
   }
 
   default_cache_behavior {
-    allowed_methods            = ["GET", "HEAD", "OPTIONS"]
-    cached_methods             = ["GET", "HEAD"]
-    target_origin_id           = "${var.app_name}-origin"
+    allowed_methods  = ["GET", "HEAD", "OPTIONS"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = "${var.app_name}-origin"
+    # Brotli/gzip at the edge; JS bundles were going out uncompressed.
+    compress                   = true
     response_headers_policy_id = aws_cloudfront_response_headers_policy.site.id
 
     forwarded_values {
